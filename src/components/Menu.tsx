@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Container, IconButton, Box, Typography } from '@mui/material';
+import { Container, IconButton, Box, Typography, useTheme } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Menu as MenuType } from '../types/menu';
 import { MenuCategory } from './MenuCategory';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RestaurantThemeWithBase } from '../themes/defaultTheme';
 
 interface MenuProps {
   menu: MenuType;
 }
 
 export const Menu: React.FC<MenuProps> = ({ menu }) => {
+  const theme = useTheme() as RestaurantThemeWithBase;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [visibleCategory, setVisibleCategory] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -53,6 +55,8 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         rootMargin: '-20% 0px -20% 0px',
         threshold: [0, 0.25, 0.5, 0.75, 1]
       };
+
+      const visibleEntries = visibleEntriesRef.current;
 
       const callback: IntersectionObserverCallback = (entries) => {
         // Skip updates if we're programmatically scrolling
@@ -98,13 +102,15 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         if (observerRef.current) {
           observerRef.current.disconnect();
         }
-        visibleEntriesRef.current.clear();
+        if (visibleEntries) {
+          visibleEntries.clear();
+        }
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
       };
     }
-  }, [selectedCategory, menu.categories]);
+  }, [selectedCategory, menu.categories, visibleCategory]);
 
   // Reset scroll position when category changes
   useEffect(() => {
@@ -152,7 +158,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        backgroundColor: '#fff'
+        backgroundColor: theme.customProperties.menuHeaderBg
       }}
     >
       <AnimatePresence>
@@ -186,11 +192,8 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         sx={{
           textAlign: 'center',
           mb: 4,
-          fontWeight: 700,
-          letterSpacing: '0.15em',
-          color: '#1a237e',
-          fontSize: { xs: '1.75rem', sm: '2.25rem' },
-          textTransform: 'uppercase'
+          color: theme.palette.primary.main,
+          fontSize: { xs: '1.75rem', sm: '2.25rem' }
         }}
       >
         NOS DÉJEUNERS
@@ -210,7 +213,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
             position: 'sticky',
             top: 0,
             zIndex: 10,
-            backgroundColor: 'white',
+            backgroundColor: theme.customProperties.menuHeaderBg,
             borderBottom: '1px solid rgba(0,0,0,0.1)',
             px: 2,
             py: 1.5,
@@ -223,11 +226,11 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
               height: '4px'
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#1a237e',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarThumbColor,
+              borderRadius: theme.customProperties.borderRadiusScrollbar
             },
             '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f5f5f5'
+              backgroundColor: theme.customProperties.scrollbarTrackColor
             }
           }}
         >
@@ -247,20 +250,20 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
                 cursor: 'pointer',
                 px: 2,
                 py: 1,
-                borderRadius: '20px',
+                borderRadius: theme.customProperties.borderRadiusPills,
                 backgroundColor: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                  ? '#1a237e' 
-                  : 'transparent',
+                  ? theme.customProperties.navigationPillActiveBg
+                  : theme.customProperties.navigationPillBg,
                 color: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                  ? 'white' 
-                  : '#1a237e',
-                transition: 'all 0.3s ease',
+                  ? theme.customProperties.navigationPillActiveText
+                  : theme.customProperties.navigationPillText,
+                transition: theme.customProperties.defaultTransition,
                 whiteSpace: 'nowrap',
                 fontWeight: 600,
                 fontSize: '0.9rem',
                 '&:hover': {
                   backgroundColor: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                    ? '#1a237e' 
+                    ? theme.customProperties.navigationPillActiveBg
                     : 'rgba(26, 35, 126, 0.1)'
                 }
               }}
@@ -283,16 +286,16 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
             height: '100%',
             scrollBehavior: 'smooth',
             '&::-webkit-scrollbar': {
-              width: '6px'
+              width: theme.customProperties.scrollbarWidth
             },
             '&::-webkit-scrollbar-track': {
-              background: '#f1f1f1'
+              background: theme.customProperties.scrollbarTrackColor
             },
             '&::-webkit-scrollbar-thumb': {
-              background: '#888',
-              borderRadius: '3px',
+              background: theme.customProperties.scrollbarThumbColor,
+              borderRadius: theme.customProperties.borderRadiusScrollbar,
               '&:hover': {
-                background: '#555'
+                background: theme.palette.primary.dark
               }
             }
           }}
@@ -310,7 +313,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
               gap: 3,
               width: '100%',
               height: selectedCategory ? '100%' : 'fit-content',
-              transition: 'all 0.3s ease',
+              transition: theme.customProperties.defaultTransition,
               position: 'relative',
               pb: selectedCategory ? 0 : '80px' // Add padding at bottom when not in selected mode
             }}

@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Typography, Box, Paper, Divider } from '@mui/material';
+import { Typography, Box, Paper, useTheme } from '@mui/material';
 import { MenuCategory as MenuCategoryType } from '../types/menu';
 import { MenuItem } from './MenuItem';
-import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
+import { RestaurantThemeWithBase } from '../themes/defaultTheme';
 
 interface MenuCategoryProps {
   category: MenuCategoryType;
@@ -20,6 +20,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
   isExpanded,
   index
 }) => {
+  const theme = useTheme() as RestaurantThemeWithBase;
   const variants = {
     collapsed: {
       scale: 1,
@@ -75,16 +76,16 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
         elevation={isSelected ? 6 : 2}
         sx={{
           p: isSelected ? 3 : 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.98)',
-          transition: 'all 0.3s ease',
+          backgroundColor: theme.customProperties.categoryCardBg,
+          transition: theme.customProperties.defaultTransition,
           height: isSelected ? '100%' : '100%',
           position: 'relative',
           flexGrow: isSelected ? 0 : 1,
           overflowY: isSelected ? 'auto' : 'hidden',
           '&:hover': !isSelected ? {
-            backgroundColor: 'rgba(255, 255, 255, 1)',
-            boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
-            transform: 'translateY(-4px)',
+            backgroundColor: theme.customProperties.categoryHoverBg,
+            boxShadow: theme.customProperties.categoryHoverShadow,
+            transform: theme.customProperties.categoryHoverTransform,
             '&::after': {
               opacity: 1
             }
@@ -95,7 +96,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
             bottom: '10px',
             right: '10px',
             fontSize: '0.75rem',
-            color: '#1a237e',
+            color: theme.palette.primary.main,
             opacity: 0.7,
             fontStyle: 'italic',
             transition: 'opacity 0.3s ease',
@@ -104,20 +105,20 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
           display: 'flex',
           flexDirection: 'column',
           border: !isSelected ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
-          borderRadius: '8px',
+          borderRadius: theme.customProperties.borderRadiusBase,
           ...(isSelected && {
             '&::-webkit-scrollbar': {
               width: '8px',
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarTrackColor,
+              borderRadius: theme.customProperties.borderRadiusScrollbar
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#1a237e',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarThumbColor,
+              borderRadius: theme.customProperties.borderRadiusScrollbar
             },
             '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarTrackColor,
+              borderRadius: theme.customProperties.borderRadiusScrollbar
             }
           })
         }}
@@ -133,12 +134,12 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
               mb: category.subtitle ? 0.5 : 2,
               fontSize: isSelected ? '1.5rem' : '1.2rem',
               textTransform: 'uppercase',
-              color: '#000',
+              color: theme.customProperties.categoryTitleColor,
               lineHeight: 1.2,
               transition: 'color 0.3s ease',
               ...((!isSelected) && {
                 '&:hover': {
-                  color: '#1a237e'
+                  color: theme.customProperties.categoryTitleHoverColor
                 }
               })
             }}
@@ -151,7 +152,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
               variant="caption" 
               sx={{
                 textAlign: 'left',
-                color: '#666',
+                color: theme.customProperties.categorySubtitleColor,
                 fontStyle: 'italic',
                 mb: 2,
                 display: 'block',
@@ -210,7 +211,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                       sx={{ 
                         fontWeight: 600,
                         fontSize: '0.95rem',
-                        color: '#000',
+                        color: theme.customProperties.itemNameColor,
                         textTransform: 'uppercase',
                         lineHeight: 1.2
                       }}
@@ -222,7 +223,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                     <Typography 
                       sx={{ 
                         fontSize: '0.85rem',
-                        color: '#666',
+                        color: theme.customProperties.itemDescriptionColor,
                         lineHeight: 1.4,
                         pr: 2
                       }}
@@ -234,7 +235,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                     <Typography 
                       sx={{ 
                         fontSize: '0.85rem',
-                        color: '#666',
+                        color: theme.customProperties.itemDescriptionColor,
                         fontStyle: 'italic',
                         lineHeight: 1.4,
                         pr: 2
