@@ -1,15 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Container, IconButton, Box, Typography } from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Container, IconButton, Box, Typography, useTheme } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { Menu as MenuType } from '../types/menu';
 import { MenuCategory } from './MenuCategory';
 import { motion, AnimatePresence } from 'framer-motion';
+import { RestaurantTheme } from '../themes/themes';
 
 interface MenuProps {
   menu: MenuType;
 }
 
 export const Menu: React.FC<MenuProps> = ({ menu }) => {
+  const theme = useTheme() as RestaurantTheme & Theme;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [visibleCategory, setVisibleCategory] = useState<string | null>(null);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -18,32 +21,47 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleCategoryClick = (categoryId: string) => {
+  const handleCategoryClick = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId === selectedCategory ? null : categoryId);
     setVisibleCategory(categoryId);
-  };
+  }, [selectedCategory]);
 
   // Function to scroll to category
-  const scrollToCategory = (categoryId: string) => {
+  const scrollToCategory = useCallback((categoryId: string) => {
     const element = document.querySelector(`[data-category-id="${categoryId}"]`);
     if (element) {
-      // Disable intersection observer updates during programmatic scroll
       isScrollingRef.current = true;
-      setVisibleCategory(categoryId); // Set the target category immediately
+      setVisibleCategory(categoryId);
 
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-      // Clear any existing timeout
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
 
-      // Re-enable intersection observer after scroll animation (roughly 1 second)
       scrollTimeoutRef.current = setTimeout(() => {
         isScrollingRef.current = false;
       }, 1000);
     }
-  };
+  }, []);
+
+  // Function to scroll nav to highlighted category
+  const scrollNavToCategory = useCallback((categoryId: string) => {
+    const navContainer = navRef.current;
+    const navItem = navContainer?.querySelector(`[data-nav-id="${categoryId}"]`);
+    
+    if (navContainer && navItem) {
+      const containerWidth = navContainer.offsetWidth;
+      const itemLeft = (navItem as HTMLElement).offsetLeft;
+      const itemWidth = (navItem as HTMLElement).offsetWidth;
+      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2);
+      
+      navContainer.scrollTo({
+        left: scrollPosition,
+        behavior: 'smooth'
+      });
+    }
+  }, []);
 
   // Set up intersection observer to track visible categories
   useEffect(() => {
@@ -54,8 +72,9 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         threshold: [0, 0.25, 0.5, 0.75, 1]
       };
 
+      const visibleEntries = visibleEntriesRef.current;
+
       const callback: IntersectionObserverCallback = (entries) => {
-        // Skip updates if we're programmatically scrolling
         if (isScrollingRef.current) return;
 
         entries.forEach(entry => {
@@ -98,13 +117,15 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         if (observerRef.current) {
           observerRef.current.disconnect();
         }
-        visibleEntriesRef.current.clear();
+        if (visibleEntries) {
+          visibleEntries.clear();
+        }
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
       };
     }
-  }, [selectedCategory, menu.categories]);
+  }, [selectedCategory, menu.categories, visibleCategory]);
 
   // Reset scroll position when category changes
   useEffect(() => {
@@ -114,33 +135,13 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
     }
   }, [selectedCategory]);
 
-  // Function to scroll nav to highlighted category
-  const scrollNavToCategory = (categoryId: string) => {
-    const navContainer = navRef.current;
-    const navItem = navContainer?.querySelector(`[data-nav-id="${categoryId}"]`);
-    
-    if (navContainer && navItem) {
-      const containerWidth = navContainer.offsetWidth;
-      const itemLeft = (navItem as HTMLElement).offsetLeft;
-      const itemWidth = (navItem as HTMLElement).offsetWidth;
-      
-      // Calculate scroll position to center the item
-      const scrollPosition = itemLeft - (containerWidth / 2) + (itemWidth / 2);
-      
-      navContainer.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
-
   // Update nav scroll when visible/selected category changes
   useEffect(() => {
     const currentCategory = selectedCategory || visibleCategory;
     if (currentCategory) {
       scrollNavToCategory(currentCategory);
     }
-  }, [selectedCategory, visibleCategory]);
+  }, [selectedCategory, visibleCategory, scrollNavToCategory]);
 
   return (
     <Container 
@@ -152,7 +153,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        backgroundColor: '#fff'
+        backgroundColor: theme.customProperties.menuHeaderBg
       }}
     >
       <AnimatePresence>
@@ -188,7 +189,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
           mb: 4,
           fontWeight: 700,
           letterSpacing: '0.15em',
-          color: '#1a237e',
+          color: theme.palette.primary.main,
           fontSize: { xs: '1.75rem', sm: '2.25rem' },
           textTransform: 'uppercase'
         }}
@@ -210,8 +211,8 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
             position: 'sticky',
             top: 0,
             zIndex: 10,
-            backgroundColor: 'white',
-            borderBottom: '1px solid rgba(0,0,0,0.1)',
+            backgroundColor: theme.customProperties.menuHeaderBg,
+            borderBottom: `1px solid ${theme.palette.divider}`,
             px: 2,
             py: 1.5,
             display: 'flex',
@@ -223,11 +224,11 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
               height: '4px'
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#1a237e',
+              backgroundColor: theme.customProperties.scrollbarThumbColor,
               borderRadius: '4px'
             },
             '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f5f5f5'
+              backgroundColor: theme.customProperties.scrollbarTrackColor
             }
           }}
         >
@@ -249,19 +250,19 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
                 py: 1,
                 borderRadius: '20px',
                 backgroundColor: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                  ? '#1a237e' 
-                  : 'transparent',
+                  ? theme.customProperties.navigationPillActiveBg
+                  : theme.customProperties.navigationPillBg,
                 color: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                  ? 'white' 
-                  : '#1a237e',
+                  ? '#fff'
+                  : theme.palette.primary.main,
                 transition: 'all 0.3s ease',
                 whiteSpace: 'nowrap',
                 fontWeight: 600,
                 fontSize: '0.9rem',
                 '&:hover': {
                   backgroundColor: (selectedCategory === category.id || (!selectedCategory && visibleCategory === category.id)) 
-                    ? '#1a237e' 
-                    : 'rgba(26, 35, 126, 0.1)'
+                    ? theme.customProperties.navigationPillActiveBg
+                    : theme.customProperties.navigationPillBg
                 }
               }}
             >
@@ -286,13 +287,13 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
               width: '6px'
             },
             '&::-webkit-scrollbar-track': {
-              background: '#f1f1f1'
+              backgroundColor: theme.customProperties.scrollbarTrackColor
             },
             '&::-webkit-scrollbar-thumb': {
-              background: '#888',
+              backgroundColor: theme.customProperties.scrollbarThumbColor,
               borderRadius: '3px',
               '&:hover': {
-                background: '#555'
+                backgroundColor: theme.customProperties.scrollbarThumbColor
               }
             }
           }}
@@ -312,7 +313,7 @@ export const Menu: React.FC<MenuProps> = ({ menu }) => {
               height: selectedCategory ? '100%' : 'fit-content',
               transition: 'all 0.3s ease',
               position: 'relative',
-              pb: selectedCategory ? 0 : '80px' // Add padding at bottom when not in selected mode
+              pb: selectedCategory ? 0 : '80px'
             }}
           >
             {menu.categories.map((category, index) => (

@@ -14,16 +14,17 @@ import {
   CardMedia,
   CardContent,
   CardActionArea,
-  ImageList,
-  ImageListItem,
   Modal,
   Fade,
-  Backdrop
+  Backdrop,
+  useTheme
 } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import { MenuItem as MenuItemType } from '../types/menu';
+import { RestaurantTheme } from '../themes/themes';
 
 interface MenuItemProps {
   item: MenuItemType;
@@ -33,6 +34,7 @@ interface MenuItemProps {
 const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop&q=80';
 
 export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
+  const theme = useTheme() as RestaurantTheme & Theme;
   const [open, setOpen] = useState(false);
   const [enlargedImage, setEnlargedImage] = useState<string | null>(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -83,6 +85,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
           opacity: isExpanded ? 1 : 0,
           transform: isExpanded ? 'scale(1)' : 'scale(0.95)',
           transition: 'all 0.4s ease-in-out',
+          backgroundColor: theme.customProperties.itemCardBg,
+          borderRadius: theme.shape.borderRadius
         }}
       >
         <CardActionArea onClick={handleClick}>
@@ -126,6 +130,12 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
         onClose={handleClose}
         maxWidth="md"
         fullWidth
+        PaperProps={{
+          sx: {
+            backgroundColor: theme.customProperties.itemCardBg,
+            borderRadius: theme.shape.borderRadius * 2
+          }
+        }}
       >
         <DialogTitle sx={{ 
           display: 'flex', 
@@ -134,7 +144,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
           pb: 1
         }}>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h5" component="div">
+            <Typography variant="h5" component="div" color="text.primary">
               {item.name}
             </Typography>
             <Typography color="primary" variant="h5" sx={{ mt: 0.5 }}>
@@ -147,7 +157,8 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
             sx={{
               position: 'absolute',
               right: 8,
-              top: 8
+              top: 8,
+              color: theme.palette.text.secondary
             }}
           >
             <CloseIcon />
@@ -164,7 +175,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
                 width: '100%',
                 height: '300px',
                 objectFit: 'cover',
-                borderRadius: '8px',
+                borderRadius: theme.shape.borderRadius,
                 cursor: 'pointer',
                 transition: 'transform 0.2s',
                 '&:hover': {
@@ -174,13 +185,13 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
             />
           </Box>
 
-          <DialogContentText sx={{ mb: 3 }}>
+          <DialogContentText sx={{ mb: 3, color: theme.palette.text.secondary }}>
             {item.description}
           </DialogContentText>
 
           {item.ingredients && (
             <>
-              <Typography variant="h6" sx={{ mb: 1 }}>
+              <Typography variant="h6" sx={{ mb: 1, color: theme.palette.text.primary }}>
                 Ingrédients:
               </Typography>
               <List dense>
@@ -189,7 +200,10 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
                     <ListItemText 
                       primary={ingredient}
                       primaryTypographyProps={{
-                        sx: { fontSize: '1rem' }
+                        sx: { 
+                          fontSize: '1rem',
+                          color: theme.palette.text.secondary
+                        }
                       }}
                     />
                   </ListItem>
@@ -197,41 +211,9 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
               </List>
             </>
           )}
-
-          {allImages.length > 1 && (
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
-                Plus de photos
-              </Typography>
-              <ImageList cols={3} gap={8}>
-                {allImages.map((img, index) => (
-                  <ImageListItem 
-                    key={index}
-                    onClick={() => handleImageClick(img, index)}
-                    sx={{
-                      cursor: 'pointer',
-                      '&:hover': {
-                        opacity: 0.9,
-                        transform: 'scale(1.02)',
-                        transition: 'all 0.2s'
-                      }
-                    }}
-                  >
-                    <img
-                      src={img}
-                      alt={`${item.name} - ${index + 1}`}
-                      loading="lazy"
-                      style={{ borderRadius: '4px' }}
-                    />
-                  </ImageListItem>
-                ))}
-              </ImageList>
-            </Box>
-          )}
         </DialogContent>
       </Dialog>
 
-      {/* Enlarged Image Modal */}
       <Modal
         open={!!enlargedImage}
         onClose={handleEnlargedClose}
@@ -264,6 +246,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
                 top: '50%',
                 transform: 'translateY(-50%)',
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                color: theme.palette.text.primary,
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 }
@@ -279,6 +262,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
                 top: '50%',
                 transform: 'translateY(-50%)',
                 backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                color: theme.palette.text.primary,
                 '&:hover': {
                   backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 }
@@ -293,7 +277,7 @@ export const MenuItem: React.FC<MenuItemProps> = ({ item, isExpanded }) => {
                 maxWidth: '100%',
                 maxHeight: '90vh',
                 objectFit: 'contain',
-                borderRadius: '8px',
+                borderRadius: theme.shape.borderRadius,
               }}
             />
           </Box>

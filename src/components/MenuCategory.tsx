@@ -1,9 +1,10 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Typography, Box, Paper, Divider } from '@mui/material';
+import { Typography, Box, Paper, useTheme } from '@mui/material';
+import { Theme } from '@mui/material/styles';
 import { MenuCategory as MenuCategoryType } from '../types/menu';
 import { MenuItem } from './MenuItem';
-import TouchRipple from '@mui/material/ButtonBase/TouchRipple';
+import { RestaurantTheme } from '../themes/themes';
 
 interface MenuCategoryProps {
   category: MenuCategoryType;
@@ -20,6 +21,8 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
   isExpanded,
   index
 }) => {
+  const theme = useTheme() as RestaurantTheme & Theme;
+
   const variants = {
     collapsed: {
       scale: 1,
@@ -75,14 +78,14 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
         elevation={isSelected ? 6 : 2}
         sx={{
           p: isSelected ? 3 : 2,
-          backgroundColor: 'rgba(255, 255, 255, 0.98)',
+          backgroundColor: theme.customProperties.categoryCardBg,
           transition: 'all 0.3s ease',
           height: isSelected ? '100%' : '100%',
           position: 'relative',
           flexGrow: isSelected ? 0 : 1,
           overflowY: isSelected ? 'auto' : 'hidden',
           '&:hover': !isSelected ? {
-            backgroundColor: 'rgba(255, 255, 255, 1)',
+            backgroundColor: theme.customProperties.categoryHoverBg,
             boxShadow: '0 6px 12px rgba(0,0,0,0.15)',
             transform: 'translateY(-4px)',
             '&::after': {
@@ -95,7 +98,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
             bottom: '10px',
             right: '10px',
             fontSize: '0.75rem',
-            color: '#1a237e',
+            color: theme.palette.primary.main,
             opacity: 0.7,
             fontStyle: 'italic',
             transition: 'opacity 0.3s ease',
@@ -103,21 +106,21 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
           } : {},
           display: 'flex',
           flexDirection: 'column',
-          border: !isSelected ? '1px solid rgba(0, 0, 0, 0.1)' : 'none',
-          borderRadius: '8px',
+          border: !isSelected ? `1px solid ${theme.palette.divider}` : 'none',
+          borderRadius: theme.shape.borderRadius,
           ...(isSelected && {
             '&::-webkit-scrollbar': {
               width: '8px',
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarTrackColor,
+              borderRadius: theme.shape.borderRadius / 2
             },
             '&::-webkit-scrollbar-thumb': {
-              backgroundColor: '#1a237e',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarThumbColor,
+              borderRadius: theme.shape.borderRadius / 2
             },
             '&::-webkit-scrollbar-track': {
-              backgroundColor: '#f5f5f5',
-              borderRadius: '4px'
+              backgroundColor: theme.customProperties.scrollbarTrackColor,
+              borderRadius: theme.shape.borderRadius / 2
             }
           })
         }}
@@ -133,12 +136,12 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
               mb: category.subtitle ? 0.5 : 2,
               fontSize: isSelected ? '1.5rem' : '1.2rem',
               textTransform: 'uppercase',
-              color: '#000',
+              color: theme.palette.text.primary,
               lineHeight: 1.2,
               transition: 'color 0.3s ease',
               ...((!isSelected) && {
                 '&:hover': {
-                  color: '#1a237e'
+                  color: theme.palette.primary.main
                 }
               })
             }}
@@ -151,7 +154,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
               variant="caption" 
               sx={{
                 textAlign: 'left',
-                color: '#666',
+                color: theme.palette.text.secondary,
                 fontStyle: 'italic',
                 mb: 2,
                 display: 'block',
@@ -189,7 +192,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
               gap: 1.5,
               flex: 1,
               overflow: 'hidden',
-              pb: 3 // Add padding to prevent text overlap with the "Click to see more" text
+              pb: 3
             }}>
               {category.items.map((item, index) => (
                 <Box
@@ -210,7 +213,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                       sx={{ 
                         fontWeight: 600,
                         fontSize: '0.95rem',
-                        color: '#000',
+                        color: theme.palette.text.primary,
                         textTransform: 'uppercase',
                         lineHeight: 1.2
                       }}
@@ -222,7 +225,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                     <Typography 
                       sx={{ 
                         fontSize: '0.85rem',
-                        color: '#666',
+                        color: theme.palette.text.secondary,
                         lineHeight: 1.4,
                         pr: 2
                       }}
@@ -234,7 +237,7 @@ export const MenuCategory: React.FC<MenuCategoryProps> = ({
                     <Typography 
                       sx={{ 
                         fontSize: '0.85rem',
-                        color: '#666',
+                        color: theme.palette.text.secondary,
                         fontStyle: 'italic',
                         lineHeight: 1.4,
                         pr: 2
